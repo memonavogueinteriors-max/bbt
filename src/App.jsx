@@ -426,13 +426,7 @@ export default function App() {
 
         <div className="bbt-brand">
           <div className="bbt-brand-mark">BBT</div>
-
-          <div>
-            <div className="bbt-brand-name">Black Box Thinking</div>
-            <div className="bbt-brand-subtitle">
-              Black Box Thinking
-            </div>
-          </div>
+          <div className="bbt-brand-name">Black Box Thinking</div>
         </div>
 
         <nav className="bbt-navigation">

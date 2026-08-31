@@ -44,7 +44,21 @@ export default function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [readNotifications, setReadNotifications] = useState([]);
+  const [readNotifications, setReadNotifications] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("bbt_read_notifications") || "[]"
+      );
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem(
+      "bbt_read_notifications",
+      JSON.stringify(readNotifications)
+    );
+  }, [readNotifications]);
 
   const [username, setUsername] = useState("");
   const [pin, setPin] = useState("");
@@ -340,6 +354,23 @@ export default function App() {
     await loadData();
   }
 
+  const latestEntry = entries?.[0] || null;
+
+  const latestNotificationId = latestEntry
+    ? `rulebook-${latestEntry.id}`
+    : null;
+
+  const notificationIds = [
+    latestNotificationId,
+    latestEntry ? `activity-${latestEntry.id}` : null,
+    latestEntry ? `update-${latestEntry.id}` : null,
+  ].filter(Boolean);
+
+  const unreadNotificationCount =
+    notificationIds.filter(
+      (id) => !readNotifications.includes(id)
+    ).length;
+
   const visibleEntries =
     useMemo(() => {
       const query =
@@ -557,12 +588,12 @@ export default function App() {
               onClick={() => setShowNotifications((value) => !value)}
             >
               ♧
-              {3 - readNotifications.length > 0 && (
-                <span>{3 - readNotifications.length}</span>
+              {unreadNotificationCount > 0 && (
+                <span>{unreadNotificationCount}</span>
               )}
             </button>
 
-            {showNotifications && (
+            {showNotifications && latestEntry && (
               <div className="bbt-notification-panel">
 
                 <div className="bbt-notification-header">
@@ -577,16 +608,17 @@ export default function App() {
 
                 <div className="bbt-notification-list">
 
-                  {!readNotifications.includes("rulebook") && (
+                  {!readNotifications.includes(`rulebook-${latestEntry.id}`) && (
                     <button
                       type="button"
                       className="bbt-notification-item"
                       onClick={() => {
                         setPage("rulebook");
+                        setSelectedEntry(latestEntry);
                         setReadNotifications((current) =>
-                          current.includes("rulebook")
+                          current.includes(`rulebook-${latestEntry.id}`)
                             ? current
-                            : [...current, "rulebook"]
+                            : [...current, `rulebook-${latestEntry.id}`]
                         );
                         setShowNotifications(false);
                       }}
@@ -594,22 +626,25 @@ export default function App() {
                       <span className="notification-dot"></span>
                       <div>
                         <strong>New Rulebook Learning</strong>
-                        <small>Open the Rulebook to review the latest learning.</small>
+                        <small>
+                          #{latestEntry.rulebook_number}{" "}
+                          {latestEntry.mistake_title || "New learning entry"}
+                        </small>
                         <em>Unread</em>
                       </div>
                     </button>
                   )}
 
-                  {!readNotifications.includes("activity") && (
+                  {!readNotifications.includes(`activity-${latestEntry.id}`) && (
                     <button
                       type="button"
                       className="bbt-notification-item"
                       onClick={() => {
                         setPage("cases");
                         setReadNotifications((current) =>
-                          current.includes("activity")
+                          current.includes(`activity-${latestEntry.id}`)
                             ? current
-                            : [...current, "activity"]
+                            : [...current, `activity-${latestEntry.id}`]
                         );
                         setShowNotifications(false);
                       }}
@@ -623,16 +658,16 @@ export default function App() {
                     </button>
                   )}
 
-                  {!readNotifications.includes("update") && (
+                  {!readNotifications.includes(`update-${latestEntry.id}`) && (
                     <button
                       type="button"
                       className="bbt-notification-item"
                       onClick={() => {
                         setPage("dashboard");
                         setReadNotifications((current) =>
-                          current.includes("update")
+                          current.includes(`update-${latestEntry.id}`)
                             ? current
-                            : [...current, "update"]
+                            : [...current, `update-${latestEntry.id}`]
                         );
                         setShowNotifications(false);
                       }}
@@ -652,7 +687,12 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      setReadNotifications(["rulebook", "activity", "update"]);
+                      setReadNotifications((current) => [
+                        ...new Set([
+                          ...current,
+                          ...notificationIds,
+                        ]),
+                      ]);
                       setShowNotifications(false);
                     }}
                   >
@@ -662,7 +702,6 @@ export default function App() {
 
               </div>
             )}
-
           </div>
         </header>
 
@@ -3787,6 +3826,8 @@ const styles = {
       "Arial, sans-serif",
   },
 };
+
+
 
 
 

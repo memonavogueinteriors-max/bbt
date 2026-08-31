@@ -43,6 +43,8 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [readNotifications, setReadNotifications] = useState([]);
 
   const [username, setUsername] = useState("");
   const [pin, setPin] = useState("");
@@ -555,11 +557,119 @@ export default function App() {
 
           <div className="bbt-topbar-right">
 
-            <button className="bbt-notification">
+            <button
+              type="button"
+              className="bbt-notification"
+              onClick={() => setShowNotifications((value) => !value)}
+            >
               ♧
-              <span>3</span>
-            </button>          </div>
+              {3 - readNotifications.length > 0 && (
+                <span>{3 - readNotifications.length}</span>
+              )}
+            </button>
 
+            {showNotifications && (
+              <div className="bbt-notification-panel">
+
+                <div className="bbt-notification-header">
+                  <strong>Notifications</strong>
+                  <button
+                    type="button"
+                    onClick={() => setShowNotifications(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="bbt-notification-list">
+
+                  {!readNotifications.includes("rulebook") && (
+                    <button
+                      type="button"
+                      className="bbt-notification-item"
+                      onClick={() => {
+                        setPage("rulebook");
+                        setReadNotifications((current) =>
+                          current.includes("rulebook")
+                            ? current
+                            : [...current, "rulebook"]
+                        );
+                        setShowNotifications(false);
+                      }}
+                    >
+                      <span className="notification-dot"></span>
+                      <div>
+                        <strong>New Rulebook Learning</strong>
+                        <small>Open the Rulebook to review the latest learning.</small>
+                        <em>Unread</em>
+                      </div>
+                    </button>
+                  )}
+
+                  {!readNotifications.includes("activity") && (
+                    <button
+                      type="button"
+                      className="bbt-notification-item"
+                      onClick={() => {
+                        setPage("cases");
+                        setReadNotifications((current) =>
+                          current.includes("activity")
+                            ? current
+                            : [...current, "activity"]
+                        );
+                        setShowNotifications(false);
+                      }}
+                    >
+                      <span className="notification-dot"></span>
+                      <div>
+                        <strong>Learning Activity</strong>
+                        <small>Open Case Studies to review learning activity.</small>
+                        <em>Unread</em>
+                      </div>
+                    </button>
+                  )}
+
+                  {!readNotifications.includes("update") && (
+                    <button
+                      type="button"
+                      className="bbt-notification-item"
+                      onClick={() => {
+                        setPage("dashboard");
+                        setReadNotifications((current) =>
+                          current.includes("update")
+                            ? current
+                            : [...current, "update"]
+                        );
+                        setShowNotifications(false);
+                      }}
+                    >
+                      <span className="notification-dot"></span>
+                      <div>
+                        <strong>BBT Update</strong>
+                        <small>Return to the Dashboard for the latest activity.</small>
+                        <em>Unread</em>
+                      </div>
+                    </button>
+                  )}
+
+                </div>
+
+                <div className="bbt-notification-footer">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReadNotifications(["rulebook", "activity", "update"]);
+                      setShowNotifications(false);
+                    }}
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+          </div>
         </header>
 
         <div className="bbt-content">
@@ -3683,6 +3793,12 @@ const styles = {
       "Arial, sans-serif",
   },
 };
+
+
+
+
+
+
 
 
 
